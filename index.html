@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lost Ark Season 3 — Resonance Simulator</title>
+<style>
+:root {
+  --bg: #0a0a12; --surface: #12121f; --surface2: #1a1a2e; --border: #2a2a44;
+  --text: #e0e0f0; --text2: #8888aa; --accent: #7c5cfc;
+  --bronze: #cd7f32; --silver: #c0c0c0; --gold: #ffd700;
+  --platinum: #e5e4e2; --diamond: #b9f2ff; --sidereal: #d946ef;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+h1 { text-align:center; padding:24px 0 4px; font-size:1.8rem; letter-spacing:1px;
+     background:linear-gradient(135deg,#7c5cfc,#d946ef); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.subtitle { text-align:center; color:var(--text2); margin-bottom:20px; font-size:.9rem; }
+.container { max-width:1200px; margin:0 auto; padding:0 20px 40px; }
+
+/* Controls */
+.controls { display:flex; flex-wrap:wrap; gap:12px; justify-content:center; align-items:center;
+            background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 24px; margin-bottom:20px; }
+.ctrl-group { display:flex; align-items:center; gap:8px; }
+.ctrl-group label { font-size:.85rem; color:var(--text2); white-space:nowrap; }
+select, input[type=number] { background:var(--surface2); border:1px solid var(--border); color:var(--text);
+  border-radius:6px; padding:6px 10px; font-size:.9rem; }
+select { cursor:pointer; }
+input[type=number] { width:90px; }
+.btn { background:linear-gradient(135deg,#7c5cfc,#6344dd); color:#fff; border:none; border-radius:8px;
+       padding:10px 28px; font-size:.95rem; font-weight:600; cursor:pointer; transition:all .2s; letter-spacing:.5px; }
+.btn:hover { transform:translateY(-1px); box-shadow:0 4px 20px rgba(124,92,252,.4); }
+.btn:active { transform:translateY(0); }
+.btn:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
+.btn-secondary { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-weight:500; }
+.btn-secondary:hover { border-color:var(--accent); box-shadow:0 2px 12px rgba(124,92,252,.2); }
+
+/* Layout */
+.results { display:grid; grid-template-columns:320px 1fr; gap:20px; }
+@media(max-width:900px) { .results { grid-template-columns:1fr; } }
+.panel { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; }
+.panel h2 { font-size:1rem; color:var(--text2); margin-bottom:12px; text-transform:uppercase; letter-spacing:1px; font-weight:500; }
+
+/* Hex */
+.hex-wrap { display:flex; flex-direction:column; align-items:center; gap:16px; }
+.hex-info { text-align:center; }
+.hex-tier { font-size:1.3rem; font-weight:700; }
+.hex-sub { font-size:.85rem; color:var(--text2); margin-top:2px; }
+
+/* Stats */
+.stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:12px; }
+.stat-card { background:var(--surface2); border-radius:8px; padding:10px; text-align:center; }
+.stat-card .val { font-size:1.4rem; font-weight:700; color:var(--accent); }
+.stat-card .lbl { font-size:.7rem; color:var(--text2); text-transform:uppercase; letter-spacing:.5px; }
+
+/* Stone cost summary */
+.cost-summary { margin-top:16px; padding:12px; background:var(--surface2); border-radius:8px; }
+.cost-summary .val { font-size:1.6rem; font-weight:700; color:#ffd700; text-align:center; }
+.cost-summary .lbl { font-size:.75rem; color:var(--text2); text-align:center; text-transform:uppercase; letter-spacing:.5px; }
+
+/* Tier table */
+table { width:100%; border-collapse:collapse; font-size:.85rem; }
+th { text-align:left; color:var(--text2); font-weight:500; padding:8px 10px; border-bottom:1px solid var(--border);
+     text-transform:uppercase; font-size:.7rem; letter-spacing:.5px; }
+td { padding:7px 10px; border-bottom:1px solid rgba(42,42,68,.5); }
+tr:hover td { background:rgba(124,92,252,.05); }
+.tier-color { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+.highlight-row td { background:rgba(217,70,239,.1); font-weight:600; }
+
+/* Progress bar */
+.progress-wrap { margin:16px 0; }
+.progress-bar { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
+.progress-fill { height:100%; background:linear-gradient(90deg,#7c5cfc,#d946ef); border-radius:3px; transition:width .3s; }
+.progress-label { font-size:.75rem; color:var(--text2); margin-top:4px; text-align:center; }
+
+/* Chart area */
+.chart-wrap { position:relative; width:100%; margin-top:12px; }
+canvas { width:100%!important; }
+
+/* Distribution section */
+.dist-section { margin-top:20px; }
+
+/* Dismantle Income Section */
+.income-section { margin-top:20px; }
+.income-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(130px,1fr)); gap:8px; margin-top:12px; }
+.income-card { background:var(--surface2); border-radius:8px; padding:10px; text-align:center; border:1px solid var(--border); }
+.income-card.active { border-color:var(--accent); }
+.income-card .grade-dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:4px; vertical-align:middle; }
+.income-card .grade-name { font-size:.8rem; color:var(--text2); }
+.income-card .stones-per { font-size:1.2rem; font-weight:700; color:var(--accent); margin:4px 0; }
+.income-card input { width:60px; background:var(--surface); border:1px solid var(--border); color:var(--text);
+  border-radius:4px; padding:4px; text-align:center; font-size:.85rem; }
+.income-card .subtotal { font-size:.85rem; font-weight:600; color:#ffd700; margin-top:4px; }
+.income-summary { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:16px; }
+.income-summary .big-val { font-size:1.6rem; font-weight:700; text-align:center; }
+.income-summary .big-lbl { font-size:.7rem; color:var(--text2); text-align:center; text-transform:uppercase; letter-spacing:.5px; }
+.income-net-positive { color:#22c55e; }
+.income-net-negative { color:#ef4444; }
+
+/* Dismantle Reference Table */
+.dismantle-ref-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+.dismantle-ref-table th { text-align:left; color:var(--text2); font-weight:500; padding:10px; border-bottom:1px solid var(--border);
+  text-transform:uppercase; font-size:.7rem; letter-spacing:.5px; }
+.dismantle-ref-table td { padding:10px; border-bottom:1px solid rgba(42,42,68,.4); vertical-align:middle; }
+.dismantle-ref-table tr:hover td { background:rgba(124,92,252,.04); }
+
+/* Stone gem icon */
+.stone-icon { width:36px; height:36px; border-radius:8px; background:var(--sb);
+  display:flex; align-items:center; justify-content:center; border:1px solid color-mix(in srgb, var(--sc) 40%, transparent); }
+.stone-gem { width:18px; height:18px; position:relative; }
+.stone-gem::before { content:''; position:absolute; inset:0;
+  background:var(--sc); clip-path:polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  filter:drop-shadow(0 0 4px var(--sc)); }
+.stone-gem::after { content:''; position:absolute; top:3px; left:5px; width:6px; height:4px;
+  background:rgba(255,255,255,.4); border-radius:50%; transform:rotate(-20deg); }
+
+/* Restore badge */
+.restore-badge { display:inline-block; padding:2px 8px; border:1px solid; border-radius:4px; font-size:.75rem; font-weight:500; }
+
+/* Status badges */
+.status-confirmed { font-size:.7rem; color:#22c55e; background:rgba(34,197,94,.1); padding:2px 8px; border-radius:10px; }
+.status-estimated { font-size:.7rem; color:#f59e0b; background:rgba(245,158,11,.1); padding:2px 8px; border-radius:10px; }
+
+/* Collapsible sections */
+.collapse-header { display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+.collapse-header h2 { margin-bottom:0; }
+.collapse-toggle { background:none; border:1px solid var(--border); color:var(--text2); border-radius:6px;
+  padding:2px 10px; font-size:.75rem; cursor:pointer; transition:all .2s; }
+.collapse-toggle:hover { border-color:var(--accent); color:var(--text); }
+.collapse-body { overflow:hidden; transition:max-height .3s ease, opacity .2s ease; }
+.collapse-body.collapsed { max-height:0!important; opacity:0; margin:0; padding:0; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<h1>Season 3 Resonance Simulator</h1>
+<p class="subtitle">Monte Carlo simulation of Paradise Gear resonance upgrade costs</p>
+<div class="container">
+
+<!-- Controls -->
+<div class="controls">
+  <div class="ctrl-group">
+    <label>Mode:</label>
+    <select id="mode">
+      <option value="target">Target Tier</option>
+      <option value="sidereal6">Sidereal SS×6</option>
+    </select>
+  </div>
+  <div class="ctrl-group" id="targetGroup">
+    <label>Target:</label>
+    <select id="target"></select>
+  </div>
+  <div class="ctrl-group">
+    <label>Simulations:</label>
+    <input type="number" id="runs" value="10000" min="100" max="100000" step="100">
+  </div>
+  <button class="btn" id="runBtn" onclick="runSim()">Run Simulation</button>
+</div>
+
+<!-- Progress -->
+<div class="progress-wrap" id="progressWrap" style="display:none">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  <div class="progress-label" id="progressLabel"></div>
+</div>
+
+<!-- Results -->
+<div class="results" id="resultsArea" style="display:none">
+  <div>
+    <!-- Hexagon -->
+    <div class="panel hex-wrap">
+      <h2>Sample Run Final State</h2>
+      <svg id="hexSvg" width="240" height="240" viewBox="-120 -120 240 240"></svg>
+      <div class="hex-info">
+        <div class="hex-tier" id="hexTier"></div>
+        <div class="hex-sub" id="hexSub"></div>
+      </div>
+    </div>
+    <!-- Summary stats -->
+    <div class="panel" style="margin-top:12px">
+      <h2>Total Upgrades</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="val" id="sAvg">—</div><div class="lbl">Average</div></div>
+        <div class="stat-card"><div class="val" id="sMin">—</div><div class="lbl">Min</div></div>
+        <div class="stat-card"><div class="val" id="sMax">—</div><div class="lbl">Max</div></div>
+      </div>
+      <div class="cost-summary" style="margin-top:12px">
+        <div class="lbl">Average Total Stones</div>
+        <div class="val" id="sTotalStones">—</div>
+      </div>
+      <div class="stat-grid" style="margin-top:8px">
+        <div class="stat-card"><div class="val" id="sCostAvg" style="color:#ffd700;font-size:1.1rem">—</div><div class="lbl">Avg Stones</div></div>
+        <div class="stat-card"><div class="val" id="sCostMin" style="color:#ffd700;font-size:1.1rem">—</div><div class="lbl">Min Stones</div></div>
+        <div class="stat-card"><div class="val" id="sCostMax" style="color:#ffd700;font-size:1.1rem">—</div><div class="lbl">Max Stones</div></div>
+      </div>
+    </div>
+  </div>
+  <div>
+    <!-- Tier breakdown table -->
+    <div class="panel">
+      <h2>Per-Tier Breakdown</h2>
+      <table id="tierTable">
+        <thead><tr><th>Tier</th><th>Avg Upgrades</th><th>Min</th><th>Max</th><th>Stone Cost</th><th>Avg Stones</th></tr></thead>
+        <tbody id="tierBody"></tbody>
+      </table>
+    </div>
+    <!-- Distribution chart -->
+    <div class="panel dist-section">
+      <div class="collapse-header" onclick="toggleCollapse('distBody','distBtn')">
+        <h2>Upgrade Count Distribution</h2>
+        <button class="collapse-toggle" id="distBtn">Show</button>
+      </div>
+      <div class="collapse-body collapsed" id="distBody" style="max-height:600px;">
+        <div class="chart-wrap" style="margin-top:12px"><canvas id="distChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dismantle Stone Reference Table -->
+<div class="panel" style="margin-top:20px;">
+  <div class="collapse-header" onclick="toggleCollapse('dismantleBody','dismantleBtn')">
+    <h2>Resonance Stones from Dismantling</h2>
+    <button class="collapse-toggle" id="dismantleBtn">Show</button>
+  </div>
+  <div class="collapse-body collapsed" id="dismantleBody" style="max-height:800px;">
+  <p style="font-size:.8rem;color:var(--text2);margin:12px 0;">Dismantling a Legacy of Paradise yields Restoration Stones (grade-specific) and universal Resonance Stones. Higher Legacy grades yield more Resonance Stones per dismantle.</p>
+  <table class="dismantle-ref-table">
+    <thead>
+      <tr><th style="width:50px"></th><th>Legacy Grade</th><th style="text-align:center">Resonance Stones</th><th style="text-align:center">Status</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><div class="stone-icon" style="--sc:#aaaaaa;--sb:rgba(170,170,170,.15)"><div class="stone-gem"></div></div></td>
+        <td><span style="color:#aaaaaa;font-weight:600">Common</span> <span style="color:var(--text2);font-size:.8rem">(Grade 0)</span></td>
+
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:var(--text2)">0</td>
+        <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
+      </tr>
+      <tr>
+        <td><div class="stone-icon" style="--sc:#22c55e;--sb:rgba(34,197,94,.15)"><div class="stone-gem"></div></div></td>
+        <td><span style="color:#22c55e;font-weight:600">Uncommon</span> <span style="color:var(--text2);font-size:.8rem">(Grade 1)</span></td>
+
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">1</td>
+        <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
+      </tr>
+      <tr>
+        <td><div class="stone-icon" style="--sc:#3b82f6;--sb:rgba(59,130,246,.15)"><div class="stone-gem"></div></div></td>
+        <td><span style="color:#3b82f6;font-weight:600">Rare</span> <span style="color:var(--text2);font-size:.8rem">(Grade 2)</span></td>
+
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">1</td>
+        <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
+      </tr>
+      <tr>
+        <td><div class="stone-icon" style="--sc:#a855f7;--sb:rgba(168,85,247,.15)"><div class="stone-gem"></div></div></td>
+        <td><span style="color:#a855f7;font-weight:600">Epic</span> <span style="color:var(--text2);font-size:.8rem">(Grade 3)</span></td>
+
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">2</td>
+        <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
+      </tr>
+      <tr>
+        <td><div class="stone-icon" style="--sc:#eab308;--sb:rgba(234,179,8,.15)"><div class="stone-gem"></div></div></td>
+        <td><span style="color:#eab308;font-weight:600">Legendary</span> <span style="color:var(--text2);font-size:.8rem">(Grade 4)</span></td>
+
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">5</td>
+        <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
+      </tr>
+      <tr>
+        <td><div class="stone-icon" style="--sc:#f97316;--sb:rgba(249,115,22,.15)"><div class="stone-gem"></div></div></td>
+        <td><span style="color:#f97316;font-weight:600">Relic</span> <span style="color:var(--text2);font-size:.8rem">(Grade 5)</span></td>
+
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">7</td>
+        <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
+      </tr>
+      <tr>
+        <td><div class="stone-icon" style="--sc:#e8e4d8;--sb:rgba(232,228,216,.12)"><div class="stone-gem"></div></div></td>
+        <td><span style="color:#e8e4d8;font-weight:600">Ancient</span> <span style="color:var(--text2);font-size:.8rem">(Grade 6)</span></td>
+
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">10</td>
+        <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+
+<!-- Dismantle Income Calculator -->
+<div class="panel income-section" style="margin-top:20px;">
+  <h2>Dismantle Stone Income Calculator</h2>
+  <p style="font-size:.8rem;color:var(--text2);margin-bottom:8px;">Enter how many Legacy pieces you dismantle per week at each grade to estimate weekly resonance stone income.</p>
+  <div class="income-grid" id="incomeGrid"></div>
+  <div class="income-summary" id="incomeSummary">
+    <div><div class="big-val" id="incWeekly" style="color:#ffd700;">0</div><div class="big-lbl">Stones / Week</div></div>
+    <div><div class="big-val" id="incWeeksNeeded" style="color:var(--accent);">—</div><div class="big-lbl">Weeks to Avg Cost</div></div>
+    <div><div class="big-val" id="incSurplus" style="color:var(--text2);">—</div><div class="big-lbl">Net vs Avg Cost</div></div>
+  </div>
+  <p style="font-size:.7rem;color:var(--text2);margin-top:8px;">Run a simulation first to populate "Avg Cost" targets.</p>
+</div>
+</div>
+
+<script>
+/* === DISMANTLE STONE INCOME DATA === */
+const DISMANTLE_GRADES = [
+  {name:'Common',    color:'#aaaaaa', stones:0,  confirmed:true},
+  {name:'Uncommon',  color:'#22c55e', stones:1,  confirmed:true},
+  {name:'Rare',      color:'#3b82f6', stones:1,  confirmed:true},
+  {name:'Epic',      color:'#a855f7', stones:2,  confirmed:true},
+  {name:'Legendary', color:'#eab308', stones:5,  confirmed:true},
+  {name:'Relic',     color:'#f97316', stones:7,  confirmed:true},
+  {name:'Ancient',   color:'#e8e4d8', stones:10, confirmed:true}
+];
+
+let lastAvgStones = 0; // populated after sim runs
+
+/* === CONSTANTS === */
+const GRADES = ['C','B','A','S','SS'];
+const TIERS = [
+  {name:'Bronze 3',color:'#cd7f32',stones:3},{name:'Bronze 2',color:'#cd7f32',stones:3},{name:'Bronze 1',color:'#cd7f32',stones:3},
+  {name:'Silver 3',color:'#c0c0c0',stones:5},{name:'Silver 2',color:'#c0c0c0',stones:5},{name:'Silver 1',color:'#c0c0c0',stones:5},
+  {name:'Gold 3',color:'#ffd700',stones:8},{name:'Gold 2',color:'#ffd700',stones:8},{name:'Gold 1',color:'#ffd700',stones:8},
+  {name:'Platinum 3',color:'#e5e4e2',stones:15},{name:'Platinum 2',color:'#e5e4e2',stones:15},{name:'Platinum 1',color:'#e5e4e2',stones:15},
+  {name:'Diamond 3',color:'#b9f2ff',stones:35},{name:'Diamond 2',color:'#b9f2ff',stones:35},{name:'Diamond 1',color:'#b9f2ff',stones:35},
+  {name:'Sidereal',color:'#d946ef',stones:50}
+];
+const ROLL_WEIGHTS = [
+  {w:500, delta:2},   // Great Success 5%
+  {w:4500, delta:1},  // Success 45%
+  {w:3500, delta:0},  // Failure 35%
+  {w:1500, delta:-1}  // Great Failure 15%
+];
+const TOTAL_W = 10000;
+
+/* === INIT === */
+const targetSel = document.getElementById('target');
+TIERS.forEach((t,i) => { const o=document.createElement('option'); o.value=i; o.textContent=t.name; targetSel.appendChild(o); });
+targetSel.value = 15; // default Sidereal
+
+document.getElementById('mode').addEventListener('change', e => {
+  document.getElementById('targetGroup').style.display = e.target.value==='target' ? 'flex' : 'none';
+});
+
+/* === SIMULATION === */
+function roll() {
+  const r = Math.random()*TOTAL_W;
+  let cum=0;
+  for(const {w,delta} of ROLL_WEIGHTS) { cum+=w; if(r<cum) return delta; }
+  return -1;
+}
+
+function simOne(targetTier, siderealSS6) {
+  let tier=0, pts=[0,0,0,0,0,0]; // 6 points, each 0(C)-4(SS)
+  let totalUpgrades=0;
+  const tierUpgrades = new Array(TIERS.length).fill(0);
+  let ss6Upgrades = 0;
+
+  // Phase 1: advance through tiers
+  while(tier < targetTier || (tier < TIERS.length-1)) {
+    if(!siderealSS6 && tier >= targetTier) break;
+    if(siderealSS6 && tier >= TIERS.length-1) break;
+
+    // Pick 2 random distinct points
+    const a = Math.floor(Math.random()*6);
+    let b; do { b = Math.floor(Math.random()*6); } while(b===a);
+
+    // Roll each
+    for(const idx of [a,b]) {
+      const d = roll();
+      pts[idx] = Math.max(0, Math.min(4, pts[idx]+d));
+    }
+    totalUpgrades++;
+    tierUpgrades[tier]++;
+
+    // Check if any 2 points are SS(4) → advance tier
+    const ssCount = pts.filter(p=>p===4).length;
+    if(ssCount >= 2) {
+      tier++;
+      pts = [0,0,0,0,0,0]; // reset
+    }
+  }
+
+  // Phase 2: Sidereal SS×6 (keep rolling until all 6 are SS)
+  if(siderealSS6 && tier === TIERS.length-1) {
+    while(pts.filter(p=>p===4).length < 6) {
+      const a = Math.floor(Math.random()*6);
+      let b; do { b = Math.floor(Math.random()*6); } while(b===a);
+      for(const idx of [a,b]) {
+        const d = roll();
+        pts[idx] = Math.max(0, Math.min(4, pts[idx]+d));
+      }
+      totalUpgrades++;
+      ss6Upgrades++;
+    }
+  }
+
+  return { tier, pts, totalUpgrades, tierUpgrades, ss6Upgrades };
+}
+
+function computeStones(tierUpgrades, ss6Upgrades) {
+  let total=0;
+  for(let i=0;i<TIERS.length;i++) total += tierUpgrades[i] * TIERS[i].stones;
+  total += ss6Upgrades * TIERS[TIERS.length-1].stones; // Sidereal stones for SS×6 phase
+  return total;
+}
+
+/* === RUN === */
+let distChartObj = null;
+
+async function runSim() {
+  const mode = document.getElementById('mode').value;
+  const siderealSS6 = mode==='sidereal6';
+  const targetTier = siderealSS6 ? TIERS.length : parseInt(targetSel.value)+1;
+  const nRuns = parseInt(document.getElementById('runs').value);
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled=true; btn.textContent='Simulating...';
+  document.getElementById('progressWrap').style.display='block';
+  document.getElementById('resultsArea').style.display='none';
+
+  // Run in chunks to keep UI responsive
+  const results = [];
+  const chunkSize = 500;
+  for(let i=0;i<nRuns;i+=chunkSize) {
+    const end = Math.min(i+chunkSize, nRuns);
+    for(let j=i;j<end;j++) results.push(simOne(targetTier, siderealSS6));
+    const pct = Math.round(end/nRuns*100);
+    document.getElementById('progressFill').style.width=pct+'%';
+    document.getElementById('progressLabel').textContent=`${end.toLocaleString()} / ${nRuns.toLocaleString()} runs (${pct}%)`;
+    await new Promise(r=>setTimeout(r,0));
+  }
+
+  btn.disabled=false; btn.textContent='Run Simulation';
+  document.getElementById('progressWrap').style.display='none';
+  document.getElementById('resultsArea').style.display='grid';
+
+  renderResults(results, siderealSS6);
+}
+
+/* === RENDER === */
+function renderResults(results, siderealSS6) {
+  const n = results.length;
+
+  // Sample run (last one)
+  const sample = results[n-1];
+  drawHex(sample.pts, sample.tier);
+
+  // Total upgrade stats
+  const totals = results.map(r=>r.totalUpgrades);
+  const stones = results.map(r=>computeStones(r.tierUpgrades, r.ss6Upgrades));
+  totals.sort((a,b)=>a-b);
+  stones.sort((a,b)=>a-b);
+  const avg=t=>Math.round(t.reduce((a,b)=>a+b,0)/t.length);
+  document.getElementById('sAvg').textContent = avg(totals).toLocaleString();
+  document.getElementById('sMin').textContent = totals[0].toLocaleString();
+  document.getElementById('sMax').textContent = totals[n-1].toLocaleString();
+  document.getElementById('sTotalStones').textContent = avg(stones).toLocaleString();
+  document.getElementById('sCostAvg').textContent = avg(stones).toLocaleString();
+  document.getElementById('sCostMin').textContent = stones[0].toLocaleString();
+  document.getElementById('sCostMax').textContent = stones[n-1].toLocaleString();
+
+  // Per-tier breakdown
+  const tbody = document.getElementById('tierBody');
+  tbody.innerHTML='';
+  const maxTier = siderealSS6 ? TIERS.length : parseInt(targetSel.value)+1;
+  for(let i=0;i<maxTier;i++) {
+    const vals = results.map(r=>r.tierUpgrades[i]).sort((a,b)=>a-b);
+    const tAvg = avg(vals);
+    const stoneAvg = Math.round(tAvg * TIERS[i].stones);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><span class="tier-color" style="background:${TIERS[i].color}"></span>${TIERS[i].name}</td>
+      <td>${tAvg.toLocaleString()}</td><td>${vals[0]}</td><td>${vals[n-1].toLocaleString()}</td>
+      <td>${TIERS[i].stones}/ea</td><td>${stoneAvg.toLocaleString()}</td>`;
+    tbody.appendChild(tr);
+  }
+  if(siderealSS6) {
+    const vals = results.map(r=>r.ss6Upgrades).sort((a,b)=>a-b);
+    const tAvg = avg(vals);
+    const stoneAvg = Math.round(tAvg * TIERS[TIERS.length-1].stones);
+    const tr = document.createElement('tr');
+    tr.className='highlight-row';
+    tr.innerHTML = `<td><span class="tier-color" style="background:${TIERS[15].color}"></span>SS×6 Phase</td>
+      <td>${tAvg.toLocaleString()}</td><td>${vals[0]}</td><td>${vals[n-1].toLocaleString()}</td>
+      <td>${TIERS[15].stones}/ea</td><td>${stoneAvg.toLocaleString()}</td>`;
+    tbody.appendChild(tr);
+  }
+
+  // Update income calculator with avg stones
+  lastAvgStones = avg(stones);
+  updateIncomeSummary();
+
+  // Distribution chart
+  renderDist(totals);
+}
+
+function drawHex(pts, tierIdx) {
+  const svg = document.getElementById('hexSvg');
+  const tier = TIERS[Math.min(tierIdx, TIERS.length-1)];
+  svg.innerHTML='';
+
+  const R=90, r2=60;
+  // Background hex
+  const hexPts = Array.from({length:6},(_,i)=>{
+    const a = Math.PI/3*i - Math.PI/2;
+    return `${R*Math.cos(a)},${R*Math.sin(a)}`;
+  }).join(' ');
+  svg.innerHTML += `<polygon points="${hexPts}" fill="${tier.color}11" stroke="${tier.color}" stroke-width="2"/>`;
+
+  // Inner hex lines
+  for(let i=0;i<6;i++) {
+    const a = Math.PI/3*i - Math.PI/2;
+    svg.innerHTML += `<line x1="0" y1="0" x2="${R*Math.cos(a)}" y2="${R*Math.sin(a)}" stroke="${tier.color}33" stroke-width="1"/>`;
+  }
+
+  // Grade rings
+  for(let g=1;g<=4;g++) {
+    const gr = R*g/4;
+    const ringPts = Array.from({length:6},(_,i)=>{
+      const a = Math.PI/3*i - Math.PI/2;
+      return `${gr*Math.cos(a)},${gr*Math.sin(a)}`;
+    }).join(' ');
+    svg.innerHTML += `<polygon points="${ringPts}" fill="none" stroke="${tier.color}22" stroke-width="1"/>`;
+  }
+
+  // Data polygon
+  const dataPts = pts.map((p,i)=>{
+    const a = Math.PI/3*i - Math.PI/2;
+    const d = R*(p+1)/5;
+    return `${d*Math.cos(a)},${d*Math.sin(a)}`;
+  }).join(' ');
+  svg.innerHTML += `<polygon points="${dataPts}" fill="${tier.color}33" stroke="${tier.color}" stroke-width="2.5"/>`;
+
+  // Point dots + labels
+  pts.forEach((p,i)=>{
+    const a = Math.PI/3*i - Math.PI/2;
+    const d = R*(p+1)/5;
+    const x=d*Math.cos(a), y=d*Math.sin(a);
+    svg.innerHTML += `<circle cx="${x}" cy="${y}" r="5" fill="${tier.color}" stroke="#fff" stroke-width="1.5"/>`;
+    const lx=(R+16)*Math.cos(a), ly=(R+16)*Math.sin(a);
+    svg.innerHTML += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" fill="${tier.color}" font-size="12" font-weight="700">${GRADES[p]}</text>`;
+  });
+
+  document.getElementById('hexTier').textContent = tier.name;
+  document.getElementById('hexTier').style.color = tier.color;
+  document.getElementById('hexSub').textContent = pts.map(p=>GRADES[p]).join(' · ');
+}
+
+function renderDist(totals) {
+  const n = totals.length;
+  // Build histogram with ~50 bins
+  const mn=totals[0], mx=totals[n-1];
+  const binCount = Math.min(60, Math.max(20, Math.ceil((mx-mn)/Math.max(1,Math.round((mx-mn)/50)))));
+  const binW = (mx-mn)/binCount || 1;
+  const bins = new Array(binCount).fill(0);
+  const labels = [];
+  for(let i=0;i<binCount;i++) labels.push(Math.round(mn+binW*(i+.5)));
+  totals.forEach(v => {
+    let b = Math.floor((v-mn)/binW);
+    if(b>=binCount) b=binCount-1;
+    bins[b]++;
+  });
+  const pcts = bins.map(b=>+(b/n*100).toFixed(2));
+
+  // Percentile lines
+  const p50=totals[Math.floor(n*.5)], p90=totals[Math.floor(n*.9)], p99=totals[Math.floor(n*.99)];
+
+  if(distChartObj) distChartObj.destroy();
+  distChartObj = new Chart(document.getElementById('distChart'),{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        data:pcts,
+        backgroundColor:'rgba(124,92,252,.6)',
+        borderColor:'rgba(124,92,252,.9)',
+        borderWidth:1,
+        borderRadius:2
+      }]
+    },
+    options:{
+      responsive:true,
+      aspectRatio:2.5,
+      layout:{ padding:{ top:28 } },
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            title:ctx=>`~${ctx[0].label} upgrades`,
+            label:ctx=>`${ctx.raw}% of runs`
+          }
+        }
+      },
+      scales:{
+        x:{ title:{display:true,text:'Total Upgrades',color:'#8888aa'}, ticks:{color:'#8888aa',maxTicksLimit:15},
+            grid:{color:'rgba(42,42,68,.5)'} },
+        y:{ title:{display:true,text:'% of Runs',color:'#8888aa'}, ticks:{color:'#8888aa'},
+            grid:{color:'rgba(42,42,68,.3)'} }
+      }
+    },
+    plugins:[{
+      id:'percentiles',
+      afterDraw(chart) {
+        const ctx=chart.ctx, xScale=chart.scales.x, yScale=chart.scales.y;
+        [[p50,'50th %','#22c55e'],[p90,'90th %','#f59e0b'],[p99,'99th %','#ef4444']].forEach(([pv,lbl,col])=>{
+          // Find bin index
+          let bi=Math.floor((pv-mn)/binW); if(bi>=binCount) bi=binCount-1;
+          const x=xScale.getPixelForValue(bi);
+          ctx.save();
+          ctx.strokeStyle=col; ctx.lineWidth=2; ctx.setLineDash([4,4]);
+          ctx.beginPath(); ctx.moveTo(x,yScale.top); ctx.lineTo(x,yScale.bottom); ctx.stroke();
+          ctx.fillStyle=col; ctx.font='bold 11px sans-serif'; ctx.textAlign='center';
+          ctx.fillText(lbl,x,yScale.top-8);
+          ctx.fillText(pv.toLocaleString(),x,yScale.top-20);
+          ctx.restore();
+        });
+      }
+    }]
+  });
+}
+/* === COLLAPSE TOGGLE === */
+function toggleCollapse(bodyId, btnId) {
+  const body = document.getElementById(bodyId);
+  const btn = document.getElementById(btnId);
+  body.classList.toggle('collapsed');
+  btn.textContent = body.classList.contains('collapsed') ? 'Show' : 'Hide';
+}
+
+/* === DISMANTLE INCOME CALCULATOR === */
+function initIncomeGrid() {
+  const grid = document.getElementById('incomeGrid');
+  grid.innerHTML = '';
+  DISMANTLE_GRADES.forEach((g, i) => {
+    const card = document.createElement('div');
+    card.className = 'income-card' + (g.stones > 0 ? ' active' : '');
+    card.innerHTML = `
+      <div class="grade-name"><span class="grade-dot" style="background:${g.color}"></span>${g.name}</div>
+      <div class="stones-per">${g.stones}${g.confirmed ? '' : '*'} stones</div>
+      <div><input type="number" id="incInput${i}" value="0" min="0" max="999" oninput="updateIncomeSummary()"></div>
+      <div class="subtotal" id="incSub${i}">0 stones</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function updateIncomeSummary() {
+  let weeklyTotal = 0;
+  DISMANTLE_GRADES.forEach((g, i) => {
+    const count = parseInt(document.getElementById('incInput' + i).value) || 0;
+    const sub = count * g.stones;
+    weeklyTotal += sub;
+    document.getElementById('incSub' + i).textContent = sub.toLocaleString() + ' stones';
+  });
+
+  document.getElementById('incWeekly').textContent = weeklyTotal.toLocaleString();
+
+  if (lastAvgStones > 0 && weeklyTotal > 0) {
+    const weeks = Math.ceil(lastAvgStones / weeklyTotal);
+    document.getElementById('incWeeksNeeded').textContent = weeks.toLocaleString();
+
+    const surplus = document.getElementById('incSurplus');
+    const weeksInput = parseInt(document.getElementById('incWeeksCalc')?.value) || weeks;
+    const totalEarned = weeklyTotal * weeksInput;
+    const net = totalEarned - lastAvgStones;
+    surplus.textContent = (net >= 0 ? '+' : '') + net.toLocaleString();
+    surplus.className = 'big-val ' + (net >= 0 ? 'income-net-positive' : 'income-net-negative');
+  } else {
+    document.getElementById('incWeeksNeeded').textContent = weeklyTotal > 0 ? '—' : '—';
+    const surplus = document.getElementById('incSurplus');
+    surplus.textContent = '—';
+    surplus.className = 'big-val';
+  }
+}
+
+initIncomeGrid();
+</script>
+</body>
+</html>
