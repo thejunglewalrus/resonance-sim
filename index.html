@@ -7,16 +7,28 @@
 <link rel="icon" href="assets/walrus.png" type="image/png" />
 <style>
 :root {
-  --bg: #0a0a12; --surface: #12121f; --surface2: #1a1a2e; --border: #2a2a44;
-  --text: #e0e0f0; --text2: #8888aa; --accent: #7c5cfc;
-  --bronze: #cd7f32; --silver: #c0c0c0; --gold: #ffd700;
-  --platinum: #e5e4e2; --diamond: #b9f2ff; --sidereal: #d946ef;
+  --bg: #131316; --surface: #1b1b1f; --surface2: #232329; --border: #34343c;
+  --text: #e6e6ea; --text2: #a3a3ac; --accent: #9b85d6;
+  --bronze: #cd7f32; --silver: #c0c0c0; --gold: #e3c069;
+  --platinum: #e5e4e2; --diamond: #b9f2ff; --sidereal: #cf86c2;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+body { background:radial-gradient(1100px 460px at 50% -8%, rgba(155,133,214,.05), transparent 70%) fixed, var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
 h1 { text-align:center; padding:24px 0 4px; font-size:1.8rem; letter-spacing:1px;
-     background:linear-gradient(135deg,#7c5cfc,#d946ef); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+     background:linear-gradient(135deg,#e3c069,#9b85d6); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
 .subtitle { text-align:center; color:var(--text2); margin-bottom:20px; font-size:.9rem; }
+
+/* Walrus + palm decorations (junglewalrus brand) */
+.title-row { display:flex; align-items:center; justify-content:center; gap:16px; padding:18px 12px 2px; }
+.title-row h1 { padding:0; }
+.palm { width:48px; height:auto; flex:0 0 auto; opacity:.95; filter:drop-shadow(0 2px 5px rgba(0,0,0,.45)); }
+.palm-flip { transform:scaleX(-1); }
+.footer-credit { display:flex; align-items:center; justify-content:center; gap:13px; max-width:640px; margin:0 auto; text-align:left; padding:24px 0 8px; color:var(--text2); font-size:.75rem; }
+.footer-walrus { width:62px; height:auto; flex:0 0 auto; filter:drop-shadow(0 3px 6px rgba(0,0,0,.45)); }
+@media (max-width:560px) {
+  .palm { width:34px; } .title-row { gap:9px; }
+  .footer-walrus { width:48px; }
+}
 .container { max-width:1200px; margin:0 auto; padding:0 20px 40px; }
 
 /* Controls */
@@ -28,13 +40,13 @@ select, input[type=number] { background:var(--surface2); border:1px solid var(--
   border-radius:6px; padding:6px 10px; font-size:.9rem; }
 select { cursor:pointer; }
 input[type=number] { width:90px; }
-.btn { background:linear-gradient(135deg,#7c5cfc,#6344dd); color:#fff; border:none; border-radius:8px;
+.btn { background:linear-gradient(135deg,#9b85d6,#8470b8); color:#1a1a1f; border:none; border-radius:8px;
        padding:10px 28px; font-size:.95rem; font-weight:600; cursor:pointer; transition:all .2s; letter-spacing:.5px; }
-.btn:hover { transform:translateY(-1px); box-shadow:0 4px 20px rgba(124,92,252,.4); }
+.btn:hover { transform:translateY(-1px); box-shadow:0 4px 20px rgba(155,133,214,.4); }
 .btn:active { transform:translateY(0); }
 .btn:disabled { opacity:.5; cursor:not-allowed; transform:none; box-shadow:none; }
 .btn-secondary { background:var(--surface2); border:1px solid var(--border); color:var(--text); font-weight:500; }
-.btn-secondary:hover { border-color:var(--accent); box-shadow:0 2px 12px rgba(124,92,252,.2); }
+.btn-secondary:hover { border-color:var(--accent); box-shadow:0 2px 12px rgba(155,133,214,.2); }
 
 /* Layout */
 .results { display:grid; grid-template-columns:320px 1fr; gap:20px; }
@@ -56,22 +68,22 @@ input[type=number] { width:90px; }
 
 /* Stone cost summary */
 .cost-summary { margin-top:16px; padding:12px; background:var(--surface2); border-radius:8px; }
-.cost-summary .val { font-size:1.6rem; font-weight:700; color:#ffd700; text-align:center; }
+.cost-summary .val { font-size:1.6rem; font-weight:700; color:var(--gold); text-align:center; }
 .cost-summary .lbl { font-size:.75rem; color:var(--text2); text-align:center; text-transform:uppercase; letter-spacing:.5px; }
 
 /* Tier table */
 table { width:100%; border-collapse:collapse; font-size:.85rem; }
 th { text-align:left; color:var(--text2); font-weight:500; padding:8px 10px; border-bottom:1px solid var(--border);
      text-transform:uppercase; font-size:.7rem; letter-spacing:.5px; }
-td { padding:7px 10px; border-bottom:1px solid rgba(42,42,68,.5); }
-tr:hover td { background:rgba(124,92,252,.05); }
+td { padding:7px 10px; border-bottom:1px solid rgba(52,52,60,.6); }
+tr:hover td { background:rgba(155,133,214,.05); }
 .tier-color { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle; }
-.highlight-row td { background:rgba(217,70,239,.1); font-weight:600; }
+.highlight-row td { background:rgba(207,134,194,.1); font-weight:600; }
 
 /* Progress bar */
 .progress-wrap { margin:16px 0; }
 .progress-bar { height:6px; background:var(--surface2); border-radius:3px; overflow:hidden; }
-.progress-fill { height:100%; background:linear-gradient(90deg,#7c5cfc,#d946ef); border-radius:3px; transition:width .3s; }
+.progress-fill { height:100%; background:linear-gradient(90deg,#9b85d6,#cf86c2); border-radius:3px; transition:width .3s; }
 .progress-label { font-size:.75rem; color:var(--text2); margin-top:4px; text-align:center; }
 
 /* Chart area */
@@ -91,19 +103,19 @@ canvas { width:100%!important; }
 .income-card .stones-per { font-size:1.2rem; font-weight:700; color:var(--accent); margin:4px 0; }
 .income-card input { width:60px; background:var(--surface); border:1px solid var(--border); color:var(--text);
   border-radius:4px; padding:4px; text-align:center; font-size:.85rem; }
-.income-card .subtotal { font-size:.85rem; font-weight:600; color:#ffd700; margin-top:4px; }
+.income-card .subtotal { font-size:.85rem; font-weight:600; color:var(--gold); margin-top:4px; }
 .income-summary { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:16px; }
 .income-summary .big-val { font-size:1.6rem; font-weight:700; text-align:center; }
 .income-summary .big-lbl { font-size:.7rem; color:var(--text2); text-align:center; text-transform:uppercase; letter-spacing:.5px; }
-.income-net-positive { color:#22c55e; }
-.income-net-negative { color:#ef4444; }
+.income-net-positive { color:#67bd8f; }
+.income-net-negative { color:#de8074; }
 
 /* Dismantle Reference Table */
 .dismantle-ref-table { width:100%; border-collapse:collapse; font-size:.85rem; }
 .dismantle-ref-table th { text-align:left; color:var(--text2); font-weight:500; padding:10px; border-bottom:1px solid var(--border);
   text-transform:uppercase; font-size:.7rem; letter-spacing:.5px; }
-.dismantle-ref-table td { padding:10px; border-bottom:1px solid rgba(42,42,68,.4); vertical-align:middle; }
-.dismantle-ref-table tr:hover td { background:rgba(124,92,252,.04); }
+.dismantle-ref-table td { padding:10px; border-bottom:1px solid rgba(52,52,60,.5); vertical-align:middle; }
+.dismantle-ref-table tr:hover td { background:rgba(155,133,214,.04); }
 
 /* Stone gem icon */
 .stone-icon { width:36px; height:36px; border-radius:8px; background:var(--sb);
@@ -119,7 +131,7 @@ canvas { width:100%!important; }
 .restore-badge { display:inline-block; padding:2px 8px; border:1px solid; border-radius:4px; font-size:.75rem; font-weight:500; }
 
 /* Status badges */
-.status-confirmed { font-size:.7rem; color:#22c55e; background:rgba(34,197,94,.1); padding:2px 8px; border-radius:10px; }
+.status-confirmed { font-size:.7rem; color:#67bd8f; background:rgba(103,189,143,.1); padding:2px 8px; border-radius:10px; }
 .status-estimated { font-size:.7rem; color:#f59e0b; background:rgba(245,158,11,.1); padding:2px 8px; border-radius:10px; }
 
 /* Collapsible sections */
@@ -145,7 +157,11 @@ canvas { width:100%!important; }
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
 <body>
-<h1>Season 3 Resonance Simulator</h1>
+<div class="title-row">
+  <img class="palm" src="assets/palm.png" alt="" aria-hidden="true">
+  <h1>Season 3 Resonance Simulator</h1>
+  <img class="palm palm-flip" src="assets/palm.png" alt="" aria-hidden="true">
+</div>
 <p class="subtitle">Monte Carlo simulation of Paradise Gear resonance upgrade costs</p>
 <div class="container">
 
@@ -200,9 +216,9 @@ canvas { width:100%!important; }
         <div class="val" id="sTotalStones">—</div>
       </div>
       <div class="stat-grid" style="margin-top:8px">
-        <div class="stat-card"><div class="val" id="sCostAvg" style="color:#ffd700;font-size:1.1rem">—</div><div class="lbl">Avg Stones</div></div>
-        <div class="stat-card"><div class="val" id="sCostMin" style="color:#ffd700;font-size:1.1rem">—</div><div class="lbl">Min Stones</div></div>
-        <div class="stat-card"><div class="val" id="sCostMax" style="color:#ffd700;font-size:1.1rem">—</div><div class="lbl">Max Stones</div></div>
+        <div class="stat-card"><div class="val" id="sCostAvg" style="color:#e3c069;font-size:1.1rem">—</div><div class="lbl">Avg Stones</div></div>
+        <div class="stat-card"><div class="val" id="sCostMin" style="color:#e3c069;font-size:1.1rem">—</div><div class="lbl">Min Stones</div></div>
+        <div class="stat-card"><div class="val" id="sCostMax" style="color:#e3c069;font-size:1.1rem">—</div><div class="lbl">Max Stones</div></div>
       </div>
     </div>
   </div>
@@ -249,45 +265,45 @@ canvas { width:100%!important; }
         <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
       </tr>
       <tr>
-        <td><div class="stone-icon" style="--sc:#22c55e;--sb:rgba(34,197,94,.15)"><div class="stone-gem"></div></div></td>
-        <td><span style="color:#22c55e;font-weight:600">Uncommon</span> <span style="color:var(--text2);font-size:.8rem">(Grade 1)</span></td>
+        <td><div class="stone-icon" style="--sc:#67bd8f;--sb:rgba(103,189,143,.15)"><div class="stone-gem"></div></div></td>
+        <td><span style="color:#67bd8f;font-weight:600">Uncommon</span> <span style="color:var(--text2);font-size:.8rem">(Grade 1)</span></td>
 
-        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">1</td>
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#9b85d6">1</td>
         <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
       </tr>
       <tr>
         <td><div class="stone-icon" style="--sc:#3b82f6;--sb:rgba(59,130,246,.15)"><div class="stone-gem"></div></div></td>
         <td><span style="color:#3b82f6;font-weight:600">Rare</span> <span style="color:var(--text2);font-size:.8rem">(Grade 2)</span></td>
 
-        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">1</td>
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#9b85d6">1</td>
         <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
       </tr>
       <tr>
         <td><div class="stone-icon" style="--sc:#a855f7;--sb:rgba(168,85,247,.15)"><div class="stone-gem"></div></div></td>
         <td><span style="color:#a855f7;font-weight:600">Epic</span> <span style="color:var(--text2);font-size:.8rem">(Grade 3)</span></td>
 
-        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">2</td>
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#9b85d6">2</td>
         <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
       </tr>
       <tr>
         <td><div class="stone-icon" style="--sc:#eab308;--sb:rgba(234,179,8,.15)"><div class="stone-gem"></div></div></td>
         <td><span style="color:#eab308;font-weight:600">Legendary</span> <span style="color:var(--text2);font-size:.8rem">(Grade 4)</span></td>
 
-        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">5</td>
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#9b85d6">5</td>
         <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
       </tr>
       <tr>
         <td><div class="stone-icon" style="--sc:#f97316;--sb:rgba(249,115,22,.15)"><div class="stone-gem"></div></div></td>
         <td><span style="color:#f97316;font-weight:600">Relic</span> <span style="color:var(--text2);font-size:.8rem">(Grade 5)</span></td>
 
-        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">7</td>
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#9b85d6">7</td>
         <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
       </tr>
       <tr>
         <td><div class="stone-icon" style="--sc:#e8e4d8;--sb:rgba(232,228,216,.12)"><div class="stone-gem"></div></div></td>
         <td><span style="color:#e8e4d8;font-weight:600">Ancient</span> <span style="color:var(--text2);font-size:.8rem">(Grade 6)</span></td>
 
-        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#7c5cfc">10</td>
+        <td style="text-align:center;font-size:1.2rem;font-weight:700;color:#9b85d6">10</td>
         <td style="text-align:center"><span class="status-confirmed">Confirmed</span></td>
       </tr>
     </tbody>
@@ -301,11 +317,19 @@ canvas { width:100%!important; }
   <p style="font-size:.8rem;color:var(--text2);margin-bottom:8px;">Enter how many Legacy pieces you dismantle per week at each grade to estimate weekly resonance stone income.</p>
   <div class="income-grid" id="incomeGrid"></div>
   <div class="income-summary" id="incomeSummary">
-    <div><div class="big-val" id="incWeekly" style="color:#ffd700;">0</div><div class="big-lbl">Stones / Week</div></div>
+    <div><div class="big-val" id="incWeekly" style="color:#e3c069;">0</div><div class="big-lbl">Stones / Week</div></div>
     <div><div class="big-val" id="incWeeksNeeded" style="color:var(--accent);">—</div><div class="big-lbl">Weeks to Avg Cost</div></div>
     <div><div class="big-val" id="incSurplus" style="color:var(--text2);">—</div><div class="big-lbl">Net vs Avg Cost</div></div>
   </div>
   <p style="font-size:.7rem;color:var(--text2);margin-top:8px;">Run a simulation first to populate "Avg Cost" targets.</p>
+</div>
+
+<div class="footer-credit">
+  <img class="footer-walrus" src="assets/walrus-mascot.png" alt="Junglewalrus mascot">
+  <div>
+    Drop rates and stone costs are community-sourced — spotted something off? Find me
+    <a href="https://www.twitch.tv/thejunglewalrus" target="_blank" rel="noopener" style="color:var(--accent); text-decoration:none;">@thejunglewalrus</a>.
+  </div>
 </div>
 
 <footer class="site-footer">
@@ -340,7 +364,7 @@ canvas { width:100%!important; }
 /* === DISMANTLE STONE INCOME DATA === */
 const DISMANTLE_GRADES = [
   {name:'Common',    color:'#aaaaaa', stones:0,  confirmed:true},
-  {name:'Uncommon',  color:'#22c55e', stones:1,  confirmed:true},
+  {name:'Uncommon',  color:'#67bd8f', stones:1,  confirmed:true},
   {name:'Rare',      color:'#3b82f6', stones:1,  confirmed:true},
   {name:'Epic',      color:'#a855f7', stones:2,  confirmed:true},
   {name:'Legendary', color:'#eab308', stones:5,  confirmed:true},
@@ -355,10 +379,10 @@ const GRADES = ['C','B','A','S','SS'];
 const TIERS = [
   {name:'Bronze 3',color:'#cd7f32',stones:3},{name:'Bronze 2',color:'#cd7f32',stones:3},{name:'Bronze 1',color:'#cd7f32',stones:3},
   {name:'Silver 3',color:'#c0c0c0',stones:5},{name:'Silver 2',color:'#c0c0c0',stones:5},{name:'Silver 1',color:'#c0c0c0',stones:5},
-  {name:'Gold 3',color:'#ffd700',stones:8},{name:'Gold 2',color:'#ffd700',stones:8},{name:'Gold 1',color:'#ffd700',stones:8},
+  {name:'Gold 3',color:'#e3c069',stones:8},{name:'Gold 2',color:'#e3c069',stones:8},{name:'Gold 1',color:'#e3c069',stones:8},
   {name:'Platinum 3',color:'#e5e4e2',stones:15},{name:'Platinum 2',color:'#e5e4e2',stones:15},{name:'Platinum 1',color:'#e5e4e2',stones:15},
   {name:'Diamond 3',color:'#b9f2ff',stones:35},{name:'Diamond 2',color:'#b9f2ff',stones:35},{name:'Diamond 1',color:'#b9f2ff',stones:35},
-  {name:'Sidereal',color:'#d946ef',stones:50}
+  {name:'Sidereal',color:'#cf86c2',stones:50}
 ];
 const ROLL_WEIGHTS = [
   {w:500, delta:2},   // Great Success 5%
@@ -607,8 +631,8 @@ function renderDist(totals) {
       labels,
       datasets:[{
         data:pcts,
-        backgroundColor:'rgba(124,92,252,.6)',
-        borderColor:'rgba(124,92,252,.9)',
+        backgroundColor:'rgba(155,133,214,.6)',
+        borderColor:'rgba(155,133,214,.9)',
         borderWidth:1,
         borderRadius:2
       }]
@@ -627,17 +651,17 @@ function renderDist(totals) {
         }
       },
       scales:{
-        x:{ title:{display:true,text:'Total Upgrades',color:'#8888aa'}, ticks:{color:'#8888aa',maxTicksLimit:15},
-            grid:{color:'rgba(42,42,68,.5)'} },
-        y:{ title:{display:true,text:'% of Runs',color:'#8888aa'}, ticks:{color:'#8888aa'},
-            grid:{color:'rgba(42,42,68,.3)'} }
+        x:{ title:{display:true,text:'Total Upgrades',color:'#a3a3ac'}, ticks:{color:'#a3a3ac',maxTicksLimit:15},
+            grid:{color:'rgba(52,52,60,.5)'} },
+        y:{ title:{display:true,text:'% of Runs',color:'#a3a3ac'}, ticks:{color:'#a3a3ac'},
+            grid:{color:'rgba(52,52,60,.3)'} }
       }
     },
     plugins:[{
       id:'percentiles',
       afterDraw(chart) {
         const ctx=chart.ctx, xScale=chart.scales.x, yScale=chart.scales.y;
-        [[p50,'50th %','#22c55e'],[p90,'90th %','#f59e0b'],[p99,'99th %','#ef4444']].forEach(([pv,lbl,col])=>{
+        [[p50,'50th %','#67bd8f'],[p90,'90th %','#f59e0b'],[p99,'99th %','#de8074']].forEach(([pv,lbl,col])=>{
           // Find bin index
           let bi=Math.floor((pv-mn)/binW); if(bi>=binCount) bi=binCount-1;
           const x=xScale.getPixelForValue(bi);
